@@ -1,0 +1,75 @@
+<html>
+  <head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DbJS</title>
+	
+    <script type="text/javascript" src="js/knockout-3.4.0.js"></script>
+	<script src="js/jquery-1.12.2.min.js"></script>
+	<script src="array_db.js"></script>
+
+	</head>
+  <body>
+	
+	<script>
+		//http://caragulak.nsupdate.info/proj/db/index.html
+		Number.prototype.Rand = function(maximum){
+			var minimum = this;
+			return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+		}
+		
+		var db = new ArrayDB();
+		
+		function CreateTestData(population){
+			population = population || 1000;
+			var data = new Array(population);
+			var sample = [];
+			sample.push({
+				title : 'function_',
+				value : 1000,
+				date : new Date()
+			});
+			sample.push({
+				title : 'prototype_',
+				value : 2000,
+				date : new Date()
+			});
+			sample.push({
+				title : 'class_',
+				value : 3000,
+				date : new Date()
+			});
+			var M = 0;
+			var D = -100000;
+			for(var i=0;i<population;i++){
+				var x = M.Rand(2);
+				var item = {
+					title : sample[x].title,
+					value : sample[x].value,
+					date : new Date(sample[x].date.getTime())
+				};
+				if(M.Rand(10)>6){
+					item.title += M.Rand(10);
+				}
+				item.date.setTime(item.date.getTime()+D.Rand(10000));
+				item.value += M.Rand(1000);
+				data[i] = item;
+			}
+			return data;
+		};		
+		var testA = CreateTestData(100);
+		var testB = CreateTestData(1000);
+		var join = db.Join(testA,testB,function(a,b){
+			//return a.title.localeCompare(b.title)==0;
+			return a.value==b.value;
+		});
+		console.info('sort',db.Sort(join,'title asc,date desc date,value desc number',{
+			'date' : function(value){
+				return value.getTime();
+			}
+		}));
+	</script>
+  </body>
+</html>
