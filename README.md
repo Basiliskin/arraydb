@@ -2,19 +2,19 @@
 Sort or Join by multiple object properties of Javascript array.
 
 Usage :
-  // create arraydb instance .
+  * create arraydb instance .
   var db = new ArrayDB();
   
-  // join two arrays
+  * join two arrays
   var join = db.Join(testA,testB,function(a,b){
 			return a.value==b.value;
 	});
 	
-	// sort array by multiple object properties ,custom 'date' property handler function.
-	// order format :
-	// object property + [space]+[asc/desc]+[type,optional]
-	// default types string and number
-	// date is custom property type contor,which convert date to number.
+	* sort array by multiple object properties ,custom 'date' property handler function.
+	* order format :
+	* object property + [space]+[asc/desc]+[type,optional]
+	* default types string and number
+	* date is custom property type contor,which convert date to number.
 	db.Sort(join,'title asc,date desc date,value desc number',{
 			'date' : function(value){
 				return value.getTime();
