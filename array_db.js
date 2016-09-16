@@ -1,3 +1,4 @@
+//GroupBy
 String.prototype.GetCodeNumber = function(pos){
 	var value = this;
 	var n = value.length;
@@ -52,7 +53,42 @@ function ArrayDB(){
 	for(var i=0;i<this.MaxScoreLen;i++)
 		this.ScoreTable[i] = 1.0 / Math.pow(10,i);
 }
-
+ArrayDB.prototype.GroupBy = function(A,conf,func,join){
+	var s = conf.split(',');
+	var set = [];
+	for(var i=0;i<s.length;i++){
+		var attr = s[i].split(' ');
+		if(attr.length>0){
+			set.push({
+				field : attr[0]
+			});
+		}
+	}
+	//console.info('conf',conf);
+	//console.info('set',conf);
+	var N = A.length;
+	var all = {};
+	var order = [];
+	for(var i=0;i<N;i++){
+		var id = '';
+		var row = A[i];
+		for(var j=0;j<set.length;j++){
+			id+=row[set[j].field];
+		}
+		if(!all[id]){
+			order.push(id);
+			all[id] = [];
+		}
+		all[id].push(func(row));
+	}
+	//console.info('all',all);
+	var result = [];
+	join = join || '<br>';
+	for(var i=0;i<order.length;i++){
+		result.push(all[order[i]].join(join));
+	}
+	return result;
+}
 ArrayDB.prototype.Join = function(A,B,func,outer){
 	var min = Math.min(A.length,B.length);
 	if(min==0) return [];
