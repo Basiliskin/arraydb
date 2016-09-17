@@ -53,6 +53,42 @@ function ArrayDB(){
 	for(var i=0;i<this.MaxScoreLen;i++)
 		this.ScoreTable[i] = 1.0 / Math.pow(10,i);
 }
+ArrayDB.prototype.groupToPages = function (rows,itemsPerPage,filter) { 
+	var pagedItems = [];
+	
+	for (var i = 0; i < rows.length; i++) {
+		if(filter(rows[i]))
+			var id = Math.floor(i / itemsPerPage);
+			if (!pagedItems[id]) {
+				pagedItems[id] = [ i ];
+			} else {
+				pagedItems[id].push(i);
+			}
+		}
+	
+	return {
+		currentPage : 0,
+		pages : pagedItems,
+		range : function (size) {
+			var ret = [];        
+			var e = this.pages.length-1;
+			var s = size / 2;
+			var start = this.currentPage - s;
+			if(start<0) start = 0;
+			var end = start + size;
+			if(end>e) end = e;
+			for (var i = start; i < end; i++) {
+				ret.push({
+					index : i,
+					active : i == this.currentPage
+				});
+			}        
+			 
+			return ret;
+		}
+	}
+};
+
 ArrayDB.prototype.GroupBy = function(A,conf,func,join){
 	var s = conf.split(',');
 	var set = [];
