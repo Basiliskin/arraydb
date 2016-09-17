@@ -24,7 +24,14 @@ Usage :
 	
   // group rows to pages,each page contain 20 rows,custom filter function
   pages = db.groupToPages(rows,20/* items per page*/,function(row){ return true; }/* filter function */);
-  
+  /*
+  pages will be :
+  {
+	currentPage : 0,
+	pages : pagedItems,
+	range : function (size) {..} // allow to define pagination range
+}
+  */
   // result will have row fields grouped by custom function
   var g = db.GroupBy(
   	rows,
