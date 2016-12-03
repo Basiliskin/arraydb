@@ -415,7 +415,7 @@ ArrayDB.prototype.JoinV = function(A,B,item){
 		}
 	}
 	return arr;
-}
+} 
 ArrayDB.prototype.JoinI = function(A,B,func){
 	var min = Math.min(A.length,B.length);
 	if(min==0) return [];
@@ -503,7 +503,7 @@ ArrayDB.prototype.JoinFV = function(conf){
 	return arr;
 }
 /*
-var conf = {
+var conf = { 
 	data : {
 		'A' : [{name : '1',id : 2,p : 12},{name : '3',id : 3,p : null}],
 		'B' : [{title : '11',id : 12,p : 0},{title : '13',id : 13,p : 0}],
@@ -523,7 +523,7 @@ var conf = {
 			a : null,
 			b : 'C', 
 			on : function(a,b) { return a.p==b.p; },
-			join : function(a,b){
+			join : function(a,b){ 
 				return _Extend_({desc : b.desc},a);
 			},
 			outer : false
