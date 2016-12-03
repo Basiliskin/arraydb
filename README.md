@@ -2,13 +2,14 @@
 Sort or Join by multiple object properties of Javascript array.
 
 Usage :
+```
   * create arraydb instance .
   var db = new ArrayDB();
   
   * join two arrays
   var join = db.Join(testA,testB,function(a,b){
-			return a.value==b.value;
-	});
+	return a.value==b.value;
+  });
 	
 	* sort array by multiple object properties ,custom 'date' property handler function.
 	* order format :
@@ -20,7 +21,40 @@ Usage :
 				return value.getTime();
 			}
 	})
-  
+	
+  // group rows to pages,each page contain 20 rows,custom filter function
+  pages = db.groupToPages(rows,20/* items per page*/,function(row){ return true; }/* filter function */);
+  /*
+  pages will be :
+  {
+	currentPage : 0,
+	pages : pagedItems,
+	range : function (size) {..} // allow to define pagination range
+}
+  */
+  // result will have row fields grouped by custom function
+  var g = db.GroupBy(
+  	rows,
+  	cols.join(',')/* object properties to group by*/,
+  	get_title/*merge properties function */,
+  	'<br>'/*grouped items divider*/);
+  	
+  /*
+  for example :
+    g = db.GroupBy([{name:'Item1',id:1},{name:'Item2',id:1},{name:'Item_1',id:2},{name:'Item_2',id:2}],'id',
+    	function(row){
+    	  return row.name.toLowerCase();
+    	},
+    	'<br>'
+    );
+    g will contain :
+    [
+     'item1<br>item2',
+     'item_1<br>item_2'
+    ]
+  */
+```
+
 This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
