@@ -541,3 +541,4 @@ ArrayDB.prototype.JoinEx = function(conf){
 	console.info('conf',conf);
 	return conf.filter[conf.filter.length-1].data;
 }
+ 
