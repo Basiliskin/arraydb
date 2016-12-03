@@ -1,6 +1,9 @@
 # arraydb
 Sort or Join by multiple object properties of Javascript array.
 
+Sample:
+<a href="http://m8s.nsupdate.info:8081/proj/db/index.html">Usage</a>
+
 Usage :
 ```
   * create arraydb instance .
