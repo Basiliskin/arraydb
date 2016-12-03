@@ -382,40 +382,8 @@ ArrayDB.prototype.Sort = function(arr,conf,set){
 		result[i] = arr[index[i].pos];
 	return result;
 }
-/*
-var A = [{name : '1',id : 2,p : 12},{name : '3',id : 3,p : null}]
-var B = [{title : '11',id : 12,p : 0},{title : '13',id : 13,p : 0}]
 
-var vjoin = ArrayDB.JoinV(A,B,function(a,b){
-	return a.p==b.id;
-},function(a,b){
-	return {
-		name : a.name,
-		title : b ? b.title : null,
-		id : a.id
-	}
-});
-*/
-ArrayDB.prototype.JoinV = function(A,B,item){
-	var min = Math.min(A.length,B.length);
-	if(min==0) return [];
-	var func = item.on,join = item.join,outer = item.outer;
-	var arr = [];
-		
-	for(var i=A.length-1;i>=0;i--){
-		var found = false;
-		for(var j=B.length-1;j>=0;j--){
-			found = func(A[i],B[j]);
-			if(found){
-				arr.push(join(A[i],B[j]));
-			}
-		}
-		if(outer && !found){
-			arr.push(join(A[i],null));
-		}
-	}
-	return arr;
-} 
+ 
 ArrayDB.prototype.JoinI = function(A,B,func){
 	var min = Math.min(A.length,B.length);
 	if(min==0) return [];
@@ -531,6 +499,26 @@ var conf = {
 	]
 };
 */
+ArrayDB.prototype.JoinV = function(A,B,item){
+	var min = Math.min(A.length,B.length);
+	if(min==0) return [];
+	var func = item.on,join = item.join,outer = item.outer;
+	var arr = [];
+		
+	for(var i=A.length-1;i>=0;i--){
+		var found = false;
+		for(var j=B.length-1;j>=0;j--){
+			found = func(A[i],B[j]);
+			if(found){
+				arr.push(join(A[i],B[j]));
+			}
+		}
+		if(outer && !found){
+			arr.push(join(A[i],null));
+		}
+	}
+	return arr;
+}
 ArrayDB.prototype.JoinEx = function(conf){
 	for(var i=0;i<conf.filter.length;i++){
 		var item = conf.filter[i];
@@ -541,4 +529,138 @@ ArrayDB.prototype.JoinEx = function(conf){
 	console.info('conf',conf);
 	return conf.filter[conf.filter.length-1].data;
 }
- 
+/*
+var conf = { 
+	data : {
+		'A' : [{name : '1',id : 2,p : 12},{name : '3',id : 3,p : null}],
+		'B' : [{title : '11',id : 12,p : 0},{title : '13',id : 13,p : 0}],
+		'C' : [{desc : '21',name : '3'},{desc : '23',name : '1'}]
+	},
+	Select : function(item){
+		console.info('item',item);
+		return {
+			
+		};
+	},
+	filter : [
+		{
+			a : 'A',
+			b : 'B', 
+			on : function(data,a,b) {
+				return data[a.buffer][a.index].p==data[b.buffer][b.index].id; 
+			},
+			join : function(a,b){
+				return [a,b];
+			},
+			outer : false
+		},
+		{
+			a : null,
+			b : 'C', 
+			on : function(data,a,b) { 
+				if(!a.buffer){
+					var items = data['$result$'][a.index];
+					for(var i=0;i<items.length;i++){
+						var o = items[i];
+						if(data[o.buffer][o.index].name==data[b.buffer][b.index].name) return true;
+					}
+					return false;
+				}					
+				return data[a.buffer][a.index].name==data[b.buffer][b.index].name; 
+			},
+			join : function(a,b){
+				return [a,b];
+			},
+			outer : false
+		}
+	]
+};
+*/
+ArrayDB.prototype.JoinV2 = function(conf,A,B,item){
+	var data = conf.data;
+	var n = A ?  data[A].length : conf.$result$.length;
+	var min = Math.min(n,data[B].length);
+	if(min==0) return [];
+	var func = item.on.bind(conf),outer = item.outer,join = item.join;//
+	if(!join) {
+		join = function(data,a,b){
+			return [a,b];
+		};
+	}
+	join = join.bind(conf);
+	var arr = [];
+	//console.info('start');
+
+	var bn = data[B].length;
+	for(var i=n-1;i>=0;i--){
+		var found = false;
+		var rowa = {
+			buffer : A,
+			index : i
+		};
+		for(var j=bn-1;j>=0;j--){
+			var rowb = {
+				buffer : B,
+				index : j
+			};
+			found = func(data,rowa,rowb);
+			
+			//console.warn('check',i,conf.$result$,found,rowa,rowb);
+			if(found){
+				if(!A){
+					var item = conf.$result$[i];
+					var aa = [];
+					//console.warn('item',item);
+					for(var h=0;h<item.length;h++){
+						aa.push(item[h]);
+					}
+					aa.push(rowb);
+					//console.warn('aa',aa);
+					arr.push(aa);
+				}
+				else
+					arr.push(join(data,rowa,rowb));
+			}
+		}
+		if(outer && !found){
+			if(!A){
+				var item = conf.$result$[i];
+				var aa = [];
+				//console.warn('item',item);
+				for(var h=0;h<item.length;h++){
+					aa.push(item[h]);
+				}
+				aa.push(null);
+				arr.push(aa);
+			}
+			else
+				arr.push(join(data,rowa,null));
+		}
+	}
+	//console.info('end');
+	
+	return arr;
+}
+ArrayDB.prototype.JoinEx2 = function(conf){
+	conf.$result$ = [];
+	for(var i=0;i<conf.filter.length;i++){
+		var item = conf.filter[i];
+		conf.$result$ = this.JoinV2(conf,item.a,item.b,item);
+	}
+	var Select = conf.Select.bind(conf);
+	//console.info('conf',conf);
+	var arr = [];
+	
+	for(var i=0;i<conf.$result$.length;i++){
+		var item = conf.$result$[i];
+		var set = {};
+		
+		for(var j=0;j<item.length;j++){
+			var v = item[j];
+			
+			set[v.buffer] = conf.data[v.buffer][v.index];
+		}
+		arr.push(Select(set));
+	}
+	return arr;
+}
